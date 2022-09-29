@@ -1,0 +1,150 @@
+<!doctype html>
+
+<html lang="en" onclick="closeTabContextMenu(event);">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Talent Tree Editor</title>
+  <meta name="description" content="Talent Tree Editor for DnD5e">
+  <meta name="author" content="Riccardo Gabriele">
+
+  <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  
+  <link rel="stylesheet" href="../bootstrap/css/bootstrap.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="../bootstrap/js/bootstrap.js"></script>
+  <script src="../leader-line.min.js"></script>
+  <script src="script.js"></script>
+
+</head>
+
+<body style="margin-left: 10px;">
+  <div id="top-container">
+    <button type="button" class="btn btn-primary" onclick="newTree();">Reset Active Tree</button>
+    <button type="button" class="btn btn-primary" onclick="modifyRows(1);">New Row</button>
+    <button type="button" class="btn btn-primary" onclick="modifyColumns(1);">New Column</button>
+    <button type="button" class="btn btn-primary" onclick="downloadJSON();">Save File</button>
+    <button type="button" class="btn btn-primary" onclick="$('#input-upload-file').click();">Load File</button>
+    <input type="file" style="display: none;" id="input-upload-file" onchange="readJSON();">
+    <a style="float: right; margin-right: 50px;" href="../viewer.html">Go to viewer</a>
+    <span id="arrow-options-container">
+      <span>
+        <label for="select-arrow-style"><a href="https://github.com/anseki/leader-line#path" target="_blank"
+            style="margin-right: 2px;">Arrow Style</a></label>
+        <select id="select-arrow-style" onchange="renderGrid()">
+          <option selected value="grid">Grid</option>
+          <option value="straight">Straight</option>
+          <option value="arc">Arc</option>
+          <option value="fluid">Fluid</option>
+          <option value="magnet">Magnet</option>
+        </select>
+      </span>
+      <span style="margin-left: 20px;">
+        <label for="select-arrow-color" style="margin-right: 2px;">Arrow Color</label>
+        <input type="color" id="select-arrow-color" value="#FF7F50" onchange="renderGrid()">
+      </span>
+    </span>
+  </div>
+  </div>
+  <div id="tabs-bar-container">
+    <ul class="nav nav-tabs">
+      <li class="nav-item" oncontextmenu="openTabContextMenu(event, 0);">
+        <a class="nav-link active-tab not-selectable">Awesome Talent Tree</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link not-selectable">Awesome Talent Tree 2</a>
+      </li>
+      <li class="nav-item" id="new-tab-button" onclick="addNewTab();">
+        <a class="nav-link not-selectable">+</a>
+      </li>
+    </ul>
+  </div>
+  <div id="tree-container"></div>
+
+  <div class="modal fade" id="edit-talent-modal" tabindex="-1" role="dialog" aria-labelledby="edit-talent-modal-label"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="edit-talent-modal-label">Edit Talent Slot -&nbsp;</h5>
+          <h5 class="modal-title" id="modal-title-talent-slot-position"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cancel">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="input-name">Name</label>
+            <input type="url" class="form-control" id="input-name" placeholder="Enter your talent's name"
+              onkeyup="refreshModalPreview();" onpaste="refreshModalPreview();">
+          </div>
+          <div class="form-group">
+            <label for="input-icon-url">Icon URL</label>
+            <input type="url" class="form-control" id="input-icon-url" placeholder="Enter an icon URL"
+              onkeyup="refreshModalPreview();" onpaste="refreshModalPreview();">
+            <small class="form-text text-muted">
+              The URL must point to an image. It will be scaled to 56x56.
+            </small>
+          </div>
+          <div class="form-group">
+            <label for="input-max-points">Max Points</label>
+            <input type="number" class="form-control" id="input-max-points" min="1" step="1"
+              placeholder="Enter the max number of points a player can spend on this talent"
+              onkeyup="refreshModalPreview();" onpaste="refreshModalPreview();" onchange="refreshModalPreview();">
+            <small class="form-text text-muted">
+              Only positive integers allowed.
+            </small>
+          </div>
+          <div class="form-group">
+            <label for="textarea-description">Description</label>
+            <textarea class="form-control" id="textarea-description" rows="4" onkeyup="refreshModalPreview();"
+              onpaste="refreshModalPreview();">Talent Description</textarea>
+          </div>
+          <div class="form-group">
+            <label for="input-requires-talent">Required Talents</label>
+            <input type="text" class="form-control" id="input-requires-talent" placeholder="1 1,3 3">
+            <small class="form-text text-muted">
+              Write the required position of the talent separated by a comma (i.e. "3 3,2 2" will draw an arrow from the
+              talents in the positions 3 3 and 2 2 to this one).<br>
+              They will need to have at least one point spent in one of them before the player can spend points in this
+              talent.
+            </small>
+          </div>
+          <div class="form-group">
+            <label for="modal-preview">Preview</label>
+            <div id="modal-preview">
+
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal" style="float: left;"
+            onclick="resetCurrentBlock();">Delete</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="onModalSave();" data-dismiss="modal">Save
+            changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ul class="dropdown-menu" id="context-menu">
+    <li><b class="not-selectable" id="context-menu-tree-name">Awesome Talent Tree</b></li>
+    <li role="separator" class="divider"></li>
+    <li><a class="not-selectable" onclick="closeTabContextMenu(event, true); addNewTab();">New Tab</a></li>
+    <li><a class="not-selectable" onclick="closeTabContextMenu(event, true); renameTab();">Rename Tab</a></li>
+    <li role="separator" class="divider"></li>
+    <li><a class="not-selectable" onclick="closeTabContextMenu(event, true); moveTab(-1);">Move Left</a></li>
+    <li><a class="not-selectable" onclick="closeTabContextMenu(event, true); moveTab(+1);">Move Right</a></li>
+    <li role="separator" class="divider"></li>
+    <li><a class="not-selectable" style="color: crimson;" onclick="closeTabContextMenu(event, true); removeTab();">Delete Tab</a></li>
+  </ul>
+
+</body>
+
+</html>

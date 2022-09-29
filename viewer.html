@@ -1,0 +1,43 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Talent Tree Viewer</title>
+  <meta name="description" content="Talent Tree Viewer for DnD5e">
+  <meta name="author" content="Riccardo Gabriele">
+
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="bootstrap/js/bootstrap.js"></script>
+  <script src="leader-line.min.js"></script>
+  <script src="script.js"></script>
+
+</head>
+
+<body style="margin-left: 10px;">
+  <div id="top-container">
+    <button type="button" class="btn btn-primary" onclick="resetTree();">Reset Active Tree</button>
+    <button type="button" class="btn btn-primary" onclick="downloadJSON();">Save Talents</button>
+    <button type="button" class="btn btn-primary" onclick="$('#input-upload-file').click();">Load Talents</button>
+    <input type="file" style="display: none;" id="input-upload-file" onchange="readJSON();">
+    <a style="float: right; margin-right: 50px;" href="creator/creator.html">Go to editor</a>
+  </div>
+  </div>
+  <div id="tabs-bar-container">
+    <ul class="nav nav-tabs">
+      <span id="tabs-footer"></span>
+    </ul>
+  </div>
+  <div id="tree-container"></div>
+</body>
+
+</html>
